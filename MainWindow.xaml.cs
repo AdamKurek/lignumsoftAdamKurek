@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,15 +20,23 @@ namespace lignumsoftAdamKurek
         {
             InitializeComponent();
             DataContext = this;
+            csvDataGrid.InitializingNewItem += CsvDataGrid_InitializingNewItem;
+            csvDataGrid.ItemsSource = csvData;
+            AddColumn(null, null);
         }
 
-        private List<List<string>> csvData;
+        private void CsvDataGrid_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
+        {
+            AdjustListLength(csvData.Last(), cols);
+        }
+
+        private ObservableCollection<List<string>> csvData = new ObservableCollection<List<string>>() { new List<string>() {new("") } };
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private int cols;
         private void LoadCsvData(string filePath)
         {
-            csvData = new List<List<string>>();
+            csvData = new ObservableCollection<List<string>>();
             int maxCols = 0;
             using (TextFieldParser parser = new TextFieldParser(filePath))
             {
@@ -44,6 +53,7 @@ namespace lignumsoftAdamKurek
                     }
                 }
             }
+            csvData.Add(new List<string>());
             AdjustListLengths(csvData, maxCols);
 
             csvDataGrid.Columns.Clear();
@@ -59,7 +69,7 @@ namespace lignumsoftAdamKurek
             cols = maxCols;
             csvDataGrid.ItemsSource = csvData;
         }
-       
+
         private void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -71,6 +81,7 @@ namespace lignumsoftAdamKurek
             {
                 string selectedFilePath = openFileDialog.FileName;
                 LoadCsvData(selectedFilePath);
+
             }
         }
 
@@ -90,29 +101,40 @@ namespace lignumsoftAdamKurek
 
         private void RemoveColumn(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < csvData.Count; i++)
-            {
-                csvData[i].RemoveAt(csvData[i].Count - 1);
+            try {
+                cols--;
+                for (int i = 0; i < csvData.Count; i++)
+                {
+                    csvData[i].RemoveAt(csvData[i].Count - 1);
+                }
+                csvDataGrid.Columns.Remove(csvDataGrid.Columns[csvDataGrid.Columns.Count-1]);
+                //csvDataGrid.Columns.RemoveAt(SelectedColumn--);
+                //csvDataGrid.Columns[SelectedColumn].Header = "xd";
             }
-            csvDataGrid.Columns.Remove(csvDataGrid.Columns[csvDataGrid.Columns.Count-1]);
-            
-            //csvDataGrid.Columns.RemoveAt(SelectedColumn--);
-            //csvDataGrid.Columns[SelectedColumn].Header = "xd";
-            cols--;
+            catch {
+            }
         }
 
-        static void AdjustListLengths(List<List<string>> csvData, int columns)
+      
+
+        static void AdjustListLengths(IEnumerable<List<string>> csvData, int columns)
         {
             foreach (var innerList in csvData)
             {
-                if (innerList.Count != columns)
+                AdjustListLength(innerList, columns);
+            }
+        }
+
+        static void AdjustListLength(List<string> csvData, int columns)
+        {
+            if (csvData.Count != columns)
+            {
+                if (csvData.Count < columns)
                 {
-                    if (innerList.Count < columns)
-                    {
-                        innerList.AddRange(Enumerable.Repeat(string.Empty, columns - innerList.Count));
-                    }
+                    csvData.AddRange(Enumerable.Repeat(string.Empty, columns - csvData.Count));
                 }
             }
         }
+
     }
 }

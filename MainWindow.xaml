@@ -6,29 +6,32 @@
         xmlns:local="clr-namespace:lignumsoftAdamKurek"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <DockPanel>
+        <Menu  IsMainMenu="True" DockPanel.Dock="Top">
+        <MenuItem Header="File">
+                <MenuItem Click="OpenFileButton_Click"></MenuItem>
+        </MenuItem>
+    </Menu>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-
-
-        <DataGrid x:Name="csvDataGrid"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="False"
-                  CanUserAddRows="False"
-                  CanUserReorderColumns="False"
-                  >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="22"></RowDefinition>
+                <RowDefinition ></RowDefinition>
+            </Grid.RowDefinitions>
+            <DataGrid x:Name="csvDataGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="False"
+                      CanUserAddRows="True"
+                      CanUserReorderColumns="True"
+                      CanUserDeleteRows="True"
+                      Grid.RowSpan="2"
+                      >
+           
             </DataGrid>
-            
-            <Button Click="OpenFileButton_Click" Grid.Column="1"> Open Csv</Button>
-        <Button Click="AddColumn" Grid.Row="1">AddColumn</Button>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Click="RemoveColumn" Height="23" Width="20">-</Button>
+                <Button Click="AddColumn" Height="23" Width="20">+</Button>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
 
-        <Button Click="RemoveColumn" Grid.Column="1" Grid.Row="1">RemoveColumn</Button>
-
-    </Grid>
 </Window>
