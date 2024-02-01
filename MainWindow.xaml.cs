@@ -5,16 +5,10 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace lignumsoftAdamKurek
 {
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         public MainWindow()
         {
@@ -27,13 +21,14 @@ namespace lignumsoftAdamKurek
 
         private void CsvDataGrid_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
         {
-            AdjustListLength(csvData.Last(), cols);
+            AdjustListLength(csvData.Last(), cols + removedColumns.Count);
         }
 
-        private ObservableCollection<List<string>> csvData = new ObservableCollection<List<string>>() { new List<string>() {new("") } };
-        public event PropertyChangedEventHandler? PropertyChanged;
+        private ObservableCollection<List<string>> csvData = new ObservableCollection<List<string>>() { new List<string>() {} };
 
         private int cols;
+        Stack<int> removedColumns = new();
+
         private void LoadCsvData(string filePath)
         {
             csvData = new ObservableCollection<List<string>>();
@@ -87,35 +82,40 @@ namespace lignumsoftAdamKurek
 
         private void AddColumn(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < csvData.Count; i++)
+            int addingIndex;
+            if(!removedColumns.TryPop(out addingIndex))
             {
-                csvData[i].Add(String.Empty);
+                addingIndex = cols;
+                foreach (List<string> v in csvData)
+                {
+                    v.Add(String.Empty);
+                }
             }
+
             csvDataGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = $"Column {cols + 1}",
-                Binding = new System.Windows.Data.Binding($"[{cols++}]"),
+                Header = $"Column {addingIndex + 1}",
+                Binding = new System.Windows.Data.Binding($"[{addingIndex}]"),
                 IsReadOnly = false,
             });
+            cols++;
         }
 
         private void RemoveColumn(object sender, RoutedEventArgs e)
         {
-            try {
-                cols--;
-                for (int i = 0; i < csvData.Count; i++)
-                {
-                    csvData[i].RemoveAt(csvData[i].Count - 1);
-                }
-                csvDataGrid.Columns.Remove(csvDataGrid.Columns[csvDataGrid.Columns.Count-1]);
-                //csvDataGrid.Columns.RemoveAt(SelectedColumn--);
-                //csvDataGrid.Columns[SelectedColumn].Header = "xd";
-            }
-            catch {
-            }
-        }
+            if (cols <= 0) { return; }
+            cols--;
+            DataGridTextColumn column = (DataGridTextColumn)csvDataGrid.ColumnFromDisplayIndex(csvDataGrid.Columns.Count - 1);
+            Binding b = (Binding)column.Binding;
+            int columnIndex = int.Parse(b.Path.Path.Substring(1, b.Path.Path.Length-2));
+            csvDataGrid.Columns.Remove(column);
 
-      
+            foreach (List<string> v in csvData)
+            {
+                v[columnIndex] = string.Empty;
+            }
+            removedColumns.Push(columnIndex);
+        }
 
         static void AdjustListLengths(IEnumerable<List<string>> csvData, int columns)
         {
@@ -134,6 +134,11 @@ namespace lignumsoftAdamKurek
                     csvData.AddRange(Enumerable.Repeat(string.Empty, columns - csvData.Count));
                 }
             }
+        }
+
+        private void SaveToDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            DataBaseConnection.PushToDatabase(csvData);
         }
 
     }

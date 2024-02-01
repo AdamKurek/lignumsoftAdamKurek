@@ -7,14 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <DockPanel>
-        <Menu  IsMainMenu="True" DockPanel.Dock="Top">
-        <MenuItem Header="File">
-                <MenuItem Click="OpenFileButton_Click"></MenuItem>
-        </MenuItem>
-    </Menu>
-    <Grid>
+        <Menu IsMainMenu="True" DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Click="OpenFileButton_Click" Header="Open File"></MenuItem>
+                <MenuItem Click="SaveToDatabase_Click" Header="Save To Database"></MenuItem>
+            </MenuItem>
+        </Menu>
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="22"></RowDefinition>
+                <RowDefinition Height="24"></RowDefinition>
                 <RowDefinition ></RowDefinition>
             </Grid.RowDefinitions>
             <DataGrid x:Name="csvDataGrid"
@@ -22,16 +23,15 @@
                       IsReadOnly="False"
                       CanUserAddRows="True"
                       CanUserReorderColumns="True"
+                      CanUserSortColumns="False"
                       CanUserDeleteRows="True"
                       Grid.RowSpan="2"
                       >
-           
             </DataGrid>
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Click="RemoveColumn" Height="23" Width="20">-</Button>
-                <Button Click="AddColumn" Height="23" Width="20">+</Button>
+                <Button Click="RemoveColumn" Height="24" Width="20"> - </Button>
+                <Button Click="AddColumn" Height="24" Width="20"> + </Button>
             </StackPanel>
         </Grid>
     </DockPanel>
-
 </Window>
