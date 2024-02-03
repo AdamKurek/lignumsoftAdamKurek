@@ -13,8 +13,6 @@ namespace lignumsoftAdamKurek
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
-            csvDataGrid.InitializingNewItem += CsvDataGrid_InitializingNewItem;
             csvDataGrid.ItemsSource = csvData;
             AddColumn(null, null);
         }
@@ -24,10 +22,11 @@ namespace lignumsoftAdamKurek
             AdjustListLength(csvData.Last(), cols + removedColumns.Count);
         }
 
-        private ObservableCollection<List<string>> csvData = new ObservableCollection<List<string>>() { new List<string>() {} };
+        private ObservableCollection<List<string>> csvData = new ObservableCollection<List<string>>() { new List<string>()};
 
         private int cols;
         Stack<int> removedColumns = new();
+        string NewestTable = "";
 
         private void LoadCsvData(string filePath)
         {
@@ -136,10 +135,64 @@ namespace lignumsoftAdamKurek
             }
         }
 
+        //private void csvDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    while (csvData.Count > 1 && csvData.Last().All(string.IsNullOrEmpty))
+        //    {
+        //        csvData.RemoveAt(csvData.Count - 1);
+        //    }
+        //}
+
+        private void CreateTable_Click(object sender, RoutedEventArgs e)
+        {
+            CreateTableWindow window = new();
+            window.ShowDialog();
+            NewestTable = window.NewTableName;
+        }
+
         private void SaveToDatabase_Click(object sender, RoutedEventArgs e)
         {
-            DataBaseConnection.PushToDatabase(csvData);
+            try
+            {
+                List<int> columnOrder = new();
+                foreach (var column in csvDataGrid.Columns)
+                {
+                    columnOrder.Add(column.DisplayIndex);
+                }
+                SaveToDatabaseWindow saveWnd = new(new ObservableCollection<List<string>>(csvData.OrderBy(list => columnOrder.Select(index => list[index]))), cols, NewestTable);
+            }catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
+
+        private void GetFromDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            GetFromDatabaseWindow window = new GetFromDatabaseWindow();
+            window.ShowDialog();
+            csvDataGrid.Columns.Clear();
+            csvData = window.list;
+            try
+            {
+                cols = csvData.OrderByDescending(list => list.Count).FirstOrDefault()!.Count;
+                AdjustListLengths(csvData,cols);
+                for (int i = 0;i<cols ; i++)
+                {
+                    csvDataGrid.Columns.Add(new DataGridTextColumn
+                    {
+                        Header = $"Column {i + 1}",
+                        Binding = new System.Windows.Data.Binding($"[{i}]"),
+                        IsReadOnly = false,
+                    });
+                }
+                csvDataGrid.ItemsSource = csvData;
+            }catch(Exception ex)
+            {
+                MessageBox.Show("Table was Empty or corrupted");
+            }
+        }
+
+        
 
     }
 }

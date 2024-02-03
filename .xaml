@@ -10,13 +10,8 @@
         <Menu IsMainMenu="True" DockPanel.Dock="Top">
             <MenuItem Header="File">
                 <MenuItem Click="OpenFileButton_Click" Header="Open File"></MenuItem>
+                <MenuItem Click="SaveToDatabase_Click" Header="Save To Database"></MenuItem>
             </MenuItem>
-            <MenuItem Header="Database">
-                <MenuItem Click="CreateTable_Click" Header="Create table"></MenuItem>
-                <MenuItem Click="SaveToDatabase_Click" Header="Save to database"></MenuItem>
-                <MenuItem Click="GetFromDatabase_Click" Header="Get from database"></MenuItem>
-            </MenuItem>
-
         </Menu>
         <Grid>
             <Grid.RowDefinitions>
@@ -32,6 +27,7 @@
                       CanUserDeleteRows="True"
                       Grid.RowSpan="2"
                       InitializingNewItem="CsvDataGrid_InitializingNewItem"
+                      SelectionChanged="csvDataGrid_SelectionChanged"
                       >
             </DataGrid>
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
